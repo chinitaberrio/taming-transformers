@@ -2,7 +2,8 @@ model:
   base_learning_rate: 4.5e-06
   target: taming.models.cond_transformer.Net2NetTransformer
   params:
-    cond_stage_key: coord
+    first_stage_key: image
+    cond_stage_key: segmentation
     transformer_config:
       target: taming.modules.transformer.mingpt.GPT
       params:
@@ -14,7 +15,7 @@ model:
     first_stage_config:
       target: taming.models.vqgan.VQModel
       params:
-        ckpt_path: logs/2020-11-09T13-33-36_faceshq_vqgan/checkpoints/last.ckpt
+        ckpt_path: logs/2021-05-20T10-48-54_usyd_vqgan/checkpoints/last.ckpt
         embed_dim: 256
         n_embed: 1024
         ddconfig:
@@ -37,25 +38,38 @@ model:
         lossconfig:
           target: taming.modules.losses.DummyLoss
     cond_stage_config:
-      target: taming.modules.misc.coord.CoordStage
+      target: taming.models.vqgan.VQModel
       params:
+        embed_dim: 256
         n_embed: 1024
-        down_factor: 16
-
+        image_key: segmentation
+        colorize_nlabels: 182
+        ddconfig:
+          double_z: false
+          z_channels: 256
+          resolution: 256
+          in_channels: 182
+          out_ch: 182
+          ch: 128
+          ch_mult:
+          - 1
+          - 1
+          - 2
+          - 2
+          - 4
+          num_res_blocks: 2
+          attn_resolutions:
+          - 16
+          dropout: 0.0
+        lossconfig:
+          target: taming.modules.losses.DummyLoss
 data:
   target: main.DataModuleFromConfig
   params:
-    batch_size: 2
-    num_workers: 8
+    batch_size:  1
+    num_workers: 4
     train:
-      target: taming.data.faceshq.FacesHQTrain
-      params:
-        size: 256
-        crop_size: 256
-        coord: True
+      target: taming.data.usyd.UsydTrain
     validation:
-      target: taming.data.faceshq.FacesHQValidation
-      params:
-        size: 256
-        crop_size: 256
-        coord: True
+      target: taming.data.usyd.UsydValidation
+

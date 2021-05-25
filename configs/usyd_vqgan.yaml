@@ -34,9 +34,7 @@ data:
       target: taming.data.usyd.UsydTrain
       params:
         size: 256
-        crop_size: 256
     validation:
       target: taming.data.usyd.UsydValidation
       params:
         size: 256
-        crop_size: 256
